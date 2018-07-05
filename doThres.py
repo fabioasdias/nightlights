@@ -3,12 +3,23 @@ import numpy as np
 import itertools
 from math import sqrt,ceil
 import scipy as sp
-import scipy.ndimage
+import scipy.ndimage as ni
 from skimage.morphology import diamond
 import sys
 import matplotlib.pylab as plt
-from skimage.filters import threshold_otsu
+from skimage.filters import threshold_otsu,gaussian
+from skimage.measure import find_contours
 from os.path import exists
+import inspect
+
+#https://stackoverflow.com/a/37312185/5129009
+def bbox(img,l):
+    img = (img == l)
+    rows = np.any(img, axis=1)
+    cols = np.any(img, axis=0)
+    rmin, rmax = np.argmax(rows), img.shape[0] - 1 - np.argmax(np.flipud(rows))
+    cmin, cmax = np.argmax(cols), img.shape[1] - 1 - np.argmax(np.flipud(cols))
+    return(rmin, rmax, cmin, cmax)
 
 def pixelOffset2coord(rasterfn,xOffset,yOffset):
     raster = gdal.Open(rasterfn)
@@ -75,12 +86,12 @@ def array2shp(array,outSHPfn,rasterfn,pixelValue):
     outLayer.CreateFeature(outFeature)
 
 def closing(img,s):
-    ret=sp.ndimage.maximum_filter(img,footprint=diamond(s))
-    ret=sp.ndimage.minimum_filter(ret,footprint=diamond(s))
+    ret=ni.maximum_filter(img,footprint=diamond(s))
+    ret=ni.minimum_filter(ret,footprint=diamond(s))
     return(ret)
 def opening(img,s):
-    ret=sp.ndimage.minimum_filter(img,footprint=diamond(s))
-    ret=sp.ndimage.maximum_filter(ret,footprint=diamond(s))
+    ret=ni.minimum_filter(img,footprint=diamond(s))
+    ret=ni.maximum_filter(ret,footprint=diamond(s))
     return(ret)
 def ASF(img,s):
     ret=img.copy()
@@ -93,49 +104,66 @@ def ASF(img,s):
     
 
 def main(rasterfn,outSHPfn):
-    cacheName=rasterfn.replace('tif','_marker.npy')
+    
     array = raster2array(rasterfn)
     array = np.where(array>1,np.log(array),0)
 
-    if (exists(cacheName)) and False:
+    centre=[8584, 25030]
+    delta= 1000
+    array=array[centre[0]-delta:centre[0]+delta,centre[1]-delta:centre[1]+delta]
+    array=ni.maximum_filter(array,footprint=diamond(1))
+
+    nASF=20
+    cacheName='{0}_asf'.format(nASF)+rasterfn.replace('tif','_marker.npy')
+
+    if (exists(cacheName)):
+        print('loading asf')
         with open(cacheName, 'rb') as f:
             marker = np.load(f)
-    else:
-        centre=[8584, 24530]
-        delta= 750
-        array=array[centre[0]-delta:centre[0]+delta,centre[1]-delta:centre[1]+delta]
-        marker=ASF(array,10)
-        # with open(cacheName, 'wb') as f:
-        #     np.save(f,marker)
-                
-    plt.figure()
-    plt.imshow(array)
-    plt.colorbar()
-
+    else:    
+        marker=ASF(array,nASF)
+        with open(cacheName, 'wb') as f:
+            np.save(f,marker)                
     
     T=threshold_otsu(marker)
-    print(T)
     marker=np.where(marker<T,0,1)
+    labels, NL=ni.label(marker)
+    print("Regions: ",NL)
+    
+    for i in range(1,NL+1):
+        print(i)
+        xmin,xmax,ymin,ymax=bbox(labels,i)
+        dx=int(0.3*np.abs(xmin-xmax))
+        dy=int(0.3*np.abs(ymin-ymax))
+        xmin=np.max((xmin-dx,0))
+        xmax=np.min((xmax+dx,marker.shape[0]))
+        ymin=np.max((ymin-dy,0))
+        ymax=np.min((ymax+dy,marker.shape[1]))
+        base=array[xmin:xmax,ymin:ymax]
 
-    plt.figure()
-    plt.imshow(marker)
-    plt.colorbar()
+        base=(base-np.min(base))/(np.max(base)-np.min(base))
+        base=gaussian(base,5)
+        init=labels[xmin:xmax,ymin:ymax]
+        init=np.where(init==i,1,0)        
+        newInit=np.zeros((init.shape[0]+2,init.shape[1]+2))
+        newInit[1:-1,1:-1]=init
+        init=find_contours(newInit,0.5)[0]
+        init=init[::5,:]-1
 
 
-    plt.show()
-    exit()
-    # RELEVANT LINES: check if pixel belongs to border
-    imax=(sp.ndimage.maximum_filter(array,size=3)!=array)
-    imin=(sp.ndimage.minimum_filter(array,size=3)!=array)
-    icomb=np.logical_or(imax,imin)
+        plt.figure()
+        plt.imshow(base)
+        plt.colorbar()
+        
+        plt.plot(init[:,1],init[:,0],'.-b')
 
-    # keep only pixels of original array at borders
-    edges=np.where(icomb,-1,0)
-    # toview=rescale(edges,0.1)
-    # plt.imshow(toview)
-    # plt.colorbar()
-    # plt.show()
-    array2shp(edges,outSHPfn,rasterfn,-1)#-1 => watershed marker
+
+        plt.show()
+
+
+
+
+
 
 if __name__ == "__main__":
     main(sys.argv[1],sys.argv[2])
