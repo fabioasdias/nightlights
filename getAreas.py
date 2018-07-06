@@ -1,6 +1,7 @@
 import gdal, osr
 import numpy as np
 from scipy.ndimage import maximum_filter
+from shapely.geometry import shape, mapping, Polygon
 import sys
 from skimage.filters import gaussian,threshold_li
 from skimage.measure import find_contours
@@ -9,7 +10,7 @@ from os.path import exists
 import inspect
 import json
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     import matplotlib.pylab as plt
 
@@ -69,14 +70,14 @@ def main(rasterfn,outGJ):
     # amin=np.min(array)
     # amax=np.max(array)
     # array=(array-amin)/(amax-amin)
-    T=6#threshold_li(array)
+    T=3#threshold_li(array)
     array = np.where(array<=T,0.0,1.0)
     array = maximum_filter(array,size=9)
     # array = minimum_filter(array,size=32)
     if DEBUG:
         plt.figure()
         plt.imshow(array[mask])
-        plt.title('Adaptive threshold (li) {0:.2f}'.format(T))
+        plt.title('threshold {0:.2f} + dilation square 9'.format(T))
         plt.colorbar()
 
     array = gaussian(array,16)
@@ -87,10 +88,10 @@ def main(rasterfn,outGJ):
         plt.title('Gaussian smoothing')
         plt.colorbar()
 
-    res={}
-    res["type"]="FeatureCollection"
-    res["features"]=[]        
 
+
+    spots=[]
+    # holes={}
     for c in find_contours(array,0.5):
         coordinates=[]
         if DEBUG:
@@ -99,16 +100,34 @@ def main(rasterfn,outGJ):
 
         for i in range(c.shape[0]):
             lat,lon=pixelOffset2coord(geotransform,t,c[i,1],c[i,0])
-            coordinates.append([lat,lon])
+            coordinates.append((lat,lon))
+        geom=Polygon(coordinates)
+        intersect=False
+        for i in range(len(spots)):
+            if (spots[i].contains(geom)):
+                # if (i not in holes):
+                #     holes[i]=[]
+                # holes[i].append(geom)
+                intersect=True
+                break
+        if not intersect:
+            spots.append(geom)
+    
+    # for i in holes:
+    #     spots[i]=Polygon(spots[i],holes=holes[i])
 
+
+    res={}
+    res["type"]="FeatureCollection"
+    res["features"]=[]        
+
+    for s in spots:
         res["features"].append({
         "type": "Feature",
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [coordinates,]
-            },
+        "geometry": mapping(s),
         "properties": {}
         })
+        
     with open(outGJ,'w') as f:
         json.dump(res,f)
 
