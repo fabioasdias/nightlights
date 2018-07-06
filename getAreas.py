@@ -2,11 +2,16 @@ import gdal, osr
 import numpy as np
 from scipy.ndimage import maximum_filter
 import sys
-from skimage.filters import gaussian,threshold_otsu
+from skimage.filters import gaussian,threshold_li
 from skimage.measure import find_contours
+from scipy.ndimage import maximum_filter,minimum_filter
 from os.path import exists
 import inspect
 import json
+
+DEBUG = True
+if DEBUG:
+    import matplotlib.pylab as plt
 
 #https://stackoverflow.com/a/37312185/5129009
 def bbox(img,l):
@@ -41,25 +46,57 @@ def main(rasterfn,outGJ):
     array = band.ReadAsArray()
     band = None
     raster = None
-    array = np.where(array>1,np.log(array),0)
+    # array = np.where(array>1,np.log(array),0)
 
-        
-    # delta= 5000
-    # array=array[:delta,:delta]
+    if DEBUG:
+        centre=[8000,25500]                
+        delta= [1000,1000]
+        minx=centre[0]-delta[0]
+        maxx=centre[0]+delta[1]
+        miny=centre[1]-delta[0]
+        maxy=centre[1]+delta[1]
+        mask=(slice(minx,maxx),slice(miny,maxy),)
+        plt.figure(1)
+        plt.imshow(array[mask])
+        plt.title('Original data NOAA')
+        plt.colorbar()
+        plt.figure(2)
+        plt.imshow(np.where(array[mask]>1,np.log(array[mask]),0).T,extent=[minx,maxx,miny,maxy],origin='lower')
+        plt.title('log data NOAA')
+        plt.colorbar()
 
-    amin=np.min(array)
-    amax=np.max(array)
-    array=(array-amin)/(amax-amin)
-    array=maximum_filter(array,size=3)
-    array = gaussian(array,32)
-    
+
+    # amin=np.min(array)
+    # amax=np.max(array)
+    # array=(array-amin)/(amax-amin)
+    T=6#threshold_li(array)
+    array = np.where(array<=T,0.0,1.0)
+    array = maximum_filter(array,size=9)
+    # array = minimum_filter(array,size=32)
+    if DEBUG:
+        plt.figure()
+        plt.imshow(array[mask])
+        plt.title('Adaptive threshold (li) {0:.2f}'.format(T))
+        plt.colorbar()
+
+    array = gaussian(array,16)
+    array = array/np.max(array)
+    if DEBUG:
+        plt.figure()
+        plt.imshow(array[mask])
+        plt.title('Gaussian smoothing')
+        plt.colorbar()
 
     res={}
     res["type"]="FeatureCollection"
-    res["features"]=[]
-    T=threshold_otsu(array)
-    for c in find_contours(array,T):
+    res["features"]=[]        
+
+    for c in find_contours(array,0.5):
         coordinates=[]
+        if DEBUG:
+            plt.figure(2)
+            plt.plot(c[:,0],c[:,1])
+
         for i in range(c.shape[0]):
             lat,lon=pixelOffset2coord(geotransform,t,c[i,1],c[i,0])
             coordinates.append([lat,lon])
@@ -70,10 +107,14 @@ def main(rasterfn,outGJ):
             "type": "Polygon",
             "coordinates": [coordinates,]
             },
-        "properties": {'nothing':0}
+        "properties": {}
         })
     with open(outGJ,'w') as f:
         json.dump(res,f)
+
+
+    if DEBUG:
+        plt.show()
   
     
 
