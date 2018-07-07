@@ -5,12 +5,13 @@ from shapely.geometry import shape, mapping, Polygon
 import sys
 from skimage.filters import gaussian,threshold_li
 from skimage.measure import find_contours
+from skimage.morphology import diamond
 from scipy.ndimage import maximum_filter,minimum_filter
 from os.path import exists
 import inspect
 import json
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     import matplotlib.pylab as plt
 
@@ -50,37 +51,45 @@ def main(rasterfn,outGJ):
     # array = np.where(array>1,np.log(array),0)
 
     if DEBUG:
-        centre=[8000,25500]                
-        delta= [1000,1000]
-        minx=centre[0]-delta[0]
-        maxx=centre[0]+delta[1]
-        miny=centre[1]-delta[0]
-        maxy=centre[1]+delta[1]
+        centre=[8000,25500]  # east
+        # centre=[7000,13500] #west          
+        delta= [2000,4000]
+        minx=np.max((0,centre[0]-delta[0]))
+        maxx=np.min((array.shape[0],centre[0]+delta[1]))
+        miny=np.max((0,centre[1]-delta[0]))
+        maxy=np.min((array.shape[1],centre[1]+delta[1]))
+        minx=4000
+        maxx=12100
+        miny=13200
+        maxy=27000
         mask=(slice(minx,maxx),slice(miny,maxy),)
         plt.figure(1)
         plt.imshow(array[mask])
         plt.title('Original data NOAA')
         plt.colorbar()
         plt.figure(2)
+        # plt.imshow(np.where(array[mask]>1,np.log(array[mask]),0))
         plt.imshow(np.where(array[mask]>1,np.log(array[mask]),0).T,extent=[minx,maxx,miny,maxy],origin='lower')
         plt.title('log data NOAA')
         plt.colorbar()
+        # plt.show()
 
 
     # amin=np.min(array)
     # amax=np.max(array)
     # array=(array-amin)/(amax-amin)
-    T=3#threshold_li(array)
+    T=2#threshold_li(array)
     array = np.where(array<=T,0.0,1.0)
-    array = maximum_filter(array,size=9)
-    # array = minimum_filter(array,size=32)
+    # array = minimum_filter(array,size=3)
+    array = maximum_filter(array,size=9)#footprint=diamond(9))
+    # array = minimum_filter(array,size=9)
     if DEBUG:
         plt.figure()
         plt.imshow(array[mask])
         plt.title('threshold {0:.2f} + dilation square 9'.format(T))
         plt.colorbar()
 
-    array = gaussian(array,16)
+    array = gaussian(array,32)
     array = array/np.max(array)
     if DEBUG:
         plt.figure()
