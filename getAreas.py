@@ -10,8 +10,9 @@ from scipy.ndimage import maximum_filter,minimum_filter
 from os.path import exists
 import inspect
 import json
+from glob import glob
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     import matplotlib.pylab as plt
 
@@ -36,7 +37,12 @@ def pixelOffset2coord(geotransform,t,x,y):
     return lat,lon
 
 def main(rasterfn,outGJ):
-    raster = gdal.Open(rasterfn)
+    possibleFiles=list(glob(rasterfn))
+    if (not possibleFiles):
+        print('file not found')
+        exit(-1)
+    
+    raster = gdal.Open(possibleFiles[0])
     crs = osr.SpatialReference()
     crs.ImportFromWkt(raster.GetProjectionRef())
     # create lat/long crs with WGS84 datum
@@ -78,10 +84,10 @@ def main(rasterfn,outGJ):
     # amin=np.min(array)
     # amax=np.max(array)
     # array=(array-amin)/(amax-amin)
-    T=2#threshold_li(array)
+    T=1#threshold_li(array)
     array = np.where(array<=T,0.0,1.0)
     # array = minimum_filter(array,size=3)
-    array = maximum_filter(array,size=9)#footprint=diamond(9))
+    array = maximum_filter(array,size=5)#footprint=diamond(9))
     # array = minimum_filter(array,size=9)
     if DEBUG:
         plt.figure()
@@ -111,6 +117,8 @@ def main(rasterfn,outGJ):
             lat,lon=pixelOffset2coord(geotransform,t,c[i,1],c[i,0])
             coordinates.append((lat,lon))
         geom=Polygon(coordinates)
+        # if (geom.area<1):
+        #     continue
         intersect=False
         for i in range(len(spots)):
             if (spots[i].contains(geom)):
