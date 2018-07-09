@@ -34,6 +34,7 @@ res["features"]=[]
 
 with open(sys.argv[3],'w') as f:
     f.write('MR_ID\tCOUNTRY\tMETRO\tID_FUA\n')
+    lastMega=1
     for i,s in enumerate(spots):
         I=pols.search(s)
         if (len(I)<=1): #only more than one region
@@ -43,10 +44,10 @@ with open(sys.argv[3],'w') as f:
             "geometry": mapping(s),
             "properties": {}
             })
-
+        lastMega+=1
         for ii in I:
             props=pols.getProps(ii)
-            f.write('{0}'.format(i)+'\t'+'\t'.join(['{0}'.format(props[x]) for x in ['Country','metro_broo','id_fua']])+'\n')
+            f.write('{0}'.format(lastMega)+'\t'+'\t'.join(['{0}'.format(props[x]) for x in ['Country','metro_broo','id_fua']])+'\n')
 
 
 with open('filt_'+sys.argv[1],'w') as out:

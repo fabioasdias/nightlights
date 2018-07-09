@@ -15,15 +15,15 @@ LE.tsv: E.geojson metros.shp
 LF.tsv: F.geojson metros.shp
 	python3 genList.py F.geojson metros.shp LF.tsv
 
-A.geojson: getAreas.py "*_75N180W_*.avg_rade9.tif"
-	python3 getAreas.py "*_75N180W_*.avg_rade9.tif" A.geojson
-B.geojson: getAreas.py "*_75N060W_*.avg_rade9.tif"
-	python3 getAreas.py "*_75N060W_*.avg_rade9.tif" B.geojson
-C.geojson: getAreas.py "*_75N060E_*.avg_rade9.tif"
-	python3 getAreas.py "*_75N060E_*.avg_rade9.tif" C.geojson
-D.geojson: getAreas.py "*_00N180W_*.avg_rade9.tif"
-	python3 getAreas.py "*_00N180W_*.avg_rade9.tif" D.geojson
-E.geojson: getAreas.py "*_00N060W_*.avg_rade9.tif"
-	python3 getAreas.py "*_00N060W_*.avg_rade9.tif" E.geojson
-F.geojson: getAreas.py "*_00N060E_*.avg_rade9.tif"
-	python3 getAreas.py "*_00N060E_*.avg_rade9.tif" F.geojson
+A.geojson: getAreas.py 
+	python3 getAreas.py "*_75N180W_*rade9*" A.geojson
+B.geojson: getAreas.py 
+	python3 getAreas.py "*_75N060W_*rade9*" B.geojson
+C.geojson: getAreas.py 
+	python3 getAreas.py "*_75N060E_*rade9*" C.geojson
+D.geojson: getAreas.py 
+	python3 getAreas.py "*_00N180W_*rade9*" D.geojson
+E.geojson: getAreas.py 
+	python3 getAreas.py "*_00N060W_*rade9*" E.geojson
+F.geojson: getAreas.py 
+	python3 getAreas.py "*_00N060E_*rade9*" F.geojson

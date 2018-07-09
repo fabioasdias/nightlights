@@ -12,9 +12,10 @@ import inspect
 import json
 from glob import glob
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     import matplotlib.pylab as plt
+    from skimage.transform import rescale
 
 #https://stackoverflow.com/a/37312185/5129009
 def bbox(img,l):
@@ -52,6 +53,7 @@ def main(rasterfn,outGJ):
     geotransform = raster.GetGeoTransform()
     band = raster.GetRasterBand(1)
     array = band.ReadAsArray()
+    print(possibleFiles[0],array.shape)
     band = None
     raster = None
     # array = np.where(array>1,np.log(array),0)
@@ -69,13 +71,17 @@ def main(rasterfn,outGJ):
         miny=13200
         maxy=27000
         mask=(slice(minx,maxx),slice(miny,maxy),)
-        plt.figure(1)
-        plt.imshow(array[mask])
-        plt.title('Original data NOAA')
-        plt.colorbar()
+        # plt.figure(1)
+        # plt.imshow(array[mask])
+        # plt.title('Original data NOAA')
+        # plt.colorbar()
         plt.figure(2)
         # plt.imshow(np.where(array[mask]>1,np.log(array[mask]),0))
-        plt.imshow(np.where(array[mask]>1,np.log(array[mask]),0).T,extent=[minx,maxx,miny,maxy],origin='lower')
+        aux=np.where(array>1,np.log(array),0).T
+        aux=aux/np.max(aux)
+        small=rescale(aux,0.2)
+        del(aux)
+        plt.imshow(small,extent=[0,array.shape[0],0,array.shape[1]],origin='lower')
         plt.title('log data NOAA')
         plt.colorbar()
         # plt.show()
@@ -89,17 +95,18 @@ def main(rasterfn,outGJ):
     # array = minimum_filter(array,size=3)
     array = maximum_filter(array,size=5)#footprint=diamond(9))
     # array = minimum_filter(array,size=9)
-    if DEBUG:
-        plt.figure()
-        plt.imshow(array[mask])
-        plt.title('threshold {0:.2f} + dilation square 9'.format(T))
-        plt.colorbar()
+    # if DEBUG:
+        # plt.figure()
+        # plt.imshow(array[mask])
+        # plt.title('threshold {0:.2f} + dilation square 9'.format(T))
+        # plt.colorbar()
 
     array = gaussian(array,32)
     array = array/np.max(array)
     if DEBUG:
+        small=rescale(array,0.2)
         plt.figure()
-        plt.imshow(array[mask])
+        plt.imshow(small)
         plt.title('Gaussian smoothing')
         plt.colorbar()
 
