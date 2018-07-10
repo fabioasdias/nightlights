@@ -12,7 +12,7 @@ import inspect
 import json
 from glob import glob
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     import matplotlib.pylab as plt
     from skimage.transform import rescale
