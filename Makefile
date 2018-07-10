@@ -1,7 +1,14 @@
-all: list.tsv
+all: outData.tsv 
 	echo 'ok'
+clean: 
+	-rm *.geojson
+	-rm *.tsv
+outData.tsv: list.tsv data/stats.tsv joinData.py
+	python3 joinData.py list.tsv data/stats.tsv outData.tsv
+	sed 's/,/ /g' outData.tsv | sed 's/\t/,/g' > outData.csv
 list.tsv: mergeLists.py LA.tsv LB.tsv LC.tsv LD.tsv LE.tsv LF.tsv
 	python3 mergeLists.py LA.tsv LB.tsv LC.tsv LD.tsv LE.tsv LF.tsv list.tsv
+	sed 's/,/ /g' list.tsv | sed 's/\t/,/g' > list.csv
 LA.tsv: A.geojson metros.shp
 	python3 genList.py A.geojson metros.shp LA.tsv
 LB.tsv: B.geojson metros.shp

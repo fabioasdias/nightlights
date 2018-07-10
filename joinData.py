@@ -1,8 +1,8 @@
 import sys
 from fuzzywuzzy import process
 
-if len(sys.argv)!=3:
-    print('.py list.tsv data.tsv')
+if len(sys.argv)!=4:
+    print('.py list.tsv data.tsv out.tsv')
     exit(-1)
 
 
@@ -38,16 +38,21 @@ with open(sys.argv[1],'r') as f:
                 regions[mrid]=[]
             regions[mrid].append(vals[pos['METRO']].strip())
 
-for mrid in regions:
-    vals=[0.0,]*len(header)
-    for m in regions[mrid]:
-        maybe=process.extractOne(m,names)
-        if maybe and maybe[1]>=90:
-            pass
-            # print('+',m,'->',maybe[0])
-        else:
-            print('-',m)#,'->',maybe[0],maybe[1])
 
+with open(sys.argv[3],'w') as f:
+    f.write('MR_ID\tN_METROS\tMISSING\t'+'\t'.join(header)+'\n')
+    for mrid in regions:
+        vals=[0.0,]*len(header)
+        missing=0
+        for m in regions[mrid]:
+            maybe=process.extractOne(m,names)
+            if maybe and maybe[1]>=90:
+                vals=[v+float(data[maybe[0]][i]) for i,v in enumerate(vals)]
+                # print('+',m,'->',maybe[0])
+            else:
+                missing+=1
+                # print('-',m)#,'->',maybe[0],maybe[1])
+        f.write('\t'.join(['{0}'.format(x) for x in [mrid,len(regions[mrid]),missing,*vals]])+'\n')
 
 
         
