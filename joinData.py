@@ -51,7 +51,7 @@ with open(sys.argv[3],'w') as f:
                 # print('+',m,'->',maybe[0])
             else:
                 missing+=1
-                # print('-',m)#,'->',maybe[0],maybe[1])
+                print('-',m)#,'->',maybe[0],maybe[1])
         f.write('\t'.join(['{0}'.format(x) for x in [mrid,len(regions[mrid]),missing,*vals]])+'\n')
 
 
