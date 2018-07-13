@@ -12,7 +12,7 @@ import inspect
 import json
 from glob import glob
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     import matplotlib.pylab as plt
     from skimage.transform import rescale
@@ -109,6 +109,8 @@ def main(rasterfn,outGJ):
         plt.imshow(small)
         plt.title('Gaussian smoothing')
         plt.colorbar()
+        plt.savefig(outGJ+'.gauss.png',dpi=900)
+        plt.close()
 
 
 
@@ -118,7 +120,7 @@ def main(rasterfn,outGJ):
         coordinates=[]
         if DEBUG:
             plt.figure(2)
-            plt.plot(c[:,0],c[:,1])
+            plt.plot(c[:,0],c[:,1],'-',linewidth=0.25)
 
         for i in range(c.shape[0]):
             lat,lon=pixelOffset2coord(geotransform,t,c[i,1],c[i,0])
@@ -157,7 +159,10 @@ def main(rasterfn,outGJ):
 
 
     if DEBUG:
-        plt.show()
+        plt.savefig(outGJ+'.areas.png',dpi=900)
+        plt.close()
+
+        # plt.show()
   
     
 
