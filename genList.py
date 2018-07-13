@@ -37,11 +37,11 @@ with open(sys.argv[3],'w') as f:
     lastMega=1
     for i,s in enumerate(spots):
         I=pols.search(s)
-        if (len(I)<=1): #only more than one region
-            if (len(I)==1):
-                props=pols.getProps(I[0])
-                print(['{0}'.format(props[x]) for x in ['Country','metro_broo']])
-            continue
+        #if (len(I)<=1): #only more than one region
+        #    if (len(I)==1):
+        #        props=pols.getProps(I[0])
+        #        print(['{0}'.format(props[x]) for x in ['Country','metro_broo']])
+        #    continue
         res["features"].append({
             "type": "Feature",
             "geometry": mapping(s),

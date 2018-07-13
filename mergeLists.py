@@ -34,8 +34,6 @@ with open(fout,'w') as fout:
     lastGroup=0
     for i in range(len(E)):
         for group in E[i]:
-            if (len(E[i][group])==1):
-                continue
             lastGroup+=1                
             for entry in E[i][group]:
                 fout.write('{0}\t'.format(lastGroup)+'\t'.join(entry))
