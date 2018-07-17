@@ -2,17 +2,10 @@ import React from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import './glmap.css'
-import {sendData} from './urls'
-import { connect } from 'react-redux';
 
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiZGlhc2YiLCJhIjoiY2plNHpweTRrMDA3MzJ3bmVuMGE5MTM1aCJ9.euL_A73QyruCda9iXc3ESA';
 
-
-const mapStateToProps = (state) => ({
-  hiers: state.hiers,
-  detailLevel: state.detailLevel,
-});
 
 
 let Map = class Map extends React.Component {
@@ -38,27 +31,22 @@ let Map = class Map extends React.Component {
       container: this.mapContainer,
       style: 'mapbox://styles/mapbox/light-v9',
       center: [-80.138,26.109],
-      zoom:14
+      zoom:4
     });
 
-    // navigator.geolocation.getCurrentPosition((d)=>{
-    //   this.moving=true;
-    //   this.map.setZoom(8);
-    //   this.map.flyTo({
-    //     center: [
-    //         d.coords.longitude,
-    //         d.coords.latitude,
-    //         ]});
-    //     });
-    //   this.moving=false;
+    navigator.geolocation.getCurrentPosition((d)=>{
+      this.moving=true;
+      this.map.setZoom(4);
+      this.map.flyTo({
+        center: [
+            d.coords.longitude,
+            d.coords.latitude,
+            ]});
+        });
+      this.moving=false;
 
     let BoundsChange=(d)=>{
-      if (d.originalEvent!==undefined){//&&(this.moving===false))
-        sendData(this.props.URL,{hiers:this.props.hiers,detailLevel:this.props.detailLevel,viewbox:this.map.getBounds()},(ret)=>{
-          console.log('newmap',ret);
-          this.map.getSource('gj').setData(ret);
-        });
-      
+      if (d.originalEvent!==undefined){//&&(this.moving===false))  
         if (this.props.boundsCallback!==undefined){
           this.props.boundsCallback(this.map.getBounds());
         }
@@ -72,7 +60,12 @@ let Map = class Map extends React.Component {
 
     this.map.on('load', () => {
       if (this.props.URL!==undefined){
-        sendData(this.props.URL,{hiers:this.props.hiers,detailLevel:this.props.detailLevel,viewbox:this.map.getBounds()},(ret)=>{
+        fetch(this.props.URL)
+        .then((response) => {
+          if (response.status >= 400) {throw new Error("Bad response from server");}
+          return response.json();
+        })
+        .then((ret)=>{
           console.log(ret)
           this.map.addSource('gj', {
             type: 'geojson',
@@ -81,9 +74,10 @@ let Map = class Map extends React.Component {
 
           this.map.addLayer({
             id: 'gjlayer',
-            type: 'fill',
-            source: 'gj',
-            paint: {'fill-opacity':0.75},
+            type: 'line',
+            source: 'gj', 
+            paint: {'line-color':'red',
+                    },
             // filter: ["!=", "tID", -1]
           }, 'country-label-lg'); 
           this.setFill();            
@@ -94,7 +88,9 @@ let Map = class Map extends React.Component {
   }
 
   setFill() {
-    this.map.setPaintProperty('gjlayer', 'fill-color', ['get', this.props.paintProp]);    
+    if (this.props.paintProp!==undefined){
+      this.map.setPaintProperty('gjlayer', 'fill-color', ['get', this.props.paintProp]);    
+    }
     // this.map.setFilter('faded',['!', ["has", ["to-string", ['get', "tID"]], ['literal', tids]]]);
     // this.map.setFilter('gjlayer',["has", ["to-string", ['get', "tID"]], ['literal', tids]]);
 }
@@ -102,10 +98,11 @@ let Map = class Map extends React.Component {
   render() {
     return (
       <div ref={el => this.mapContainer = el} 
-      className={(this.props.className!==undefined)?this.props.className:"absolute top right left bottom"}/>
+      className={(this.props.className!==undefined)?this.props.className:"absolute top right left bottom"}
+      />
     );
   }
 }
 
 
-export default connect(mapStateToProps)(Map);
+export default Map;
