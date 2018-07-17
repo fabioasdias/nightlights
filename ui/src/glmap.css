@@ -1,0 +1,10 @@
+.mapboxgl-map{
+    width:1300px;
+    height:800px;
+    border: solid;
+    margin: 5px;
+    border-color: darkgray;
+    border-width: medium;
+    float:left;
+    text-align: left;
+  }
