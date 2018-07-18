@@ -29,11 +29,11 @@ let Map = class Map extends React.Component {
   componentDidMount() {
     this.map = new mapboxgl.Map({
       container: this.mapContainer,
-      style: 'mapbox://styles/mapbox/light-v9',
+      style: 'mapbox://styles/diasf/cjjqdvh110bfy2rpczjs0hplj',
       center: [-80.138,26.109],
       zoom:4
     });
-
+    // diasf.3trjgf18
     navigator.geolocation.getCurrentPosition((d)=>{
       this.moving=true;
       this.map.setZoom(4);
