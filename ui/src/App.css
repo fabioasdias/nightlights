@@ -4,3 +4,7 @@
   height: 100%;
   position: absolute;
 }
+.footer {
+  font-size: small;
+  margin: 5px;
+}

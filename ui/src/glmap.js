@@ -31,6 +31,7 @@ let Map = class Map extends React.Component {
       style: 'mapbox://styles/diasf/cjjqdvh110bfy2rpczjs0hplj',
       center: [-80.138,26.109],
       maxZoom: 9,
+      minZoom: 2,
       zoom:4
     });
     // diasf.3trjgf18

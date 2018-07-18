@@ -10,6 +10,11 @@ class App extends Component {
           URL={'bright2p.geojson'}
           // URL2={'bright.geojson'}
         />
+        <footer className="footer">
+          Original satellite data from <a target="_blank" rel="noopener noreferrer" href="https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html"> the Earth Observation Group, NOAA National Geophysical Data Center</a>.
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <a target="_blank" rel="noopener noreferrer" href="https://github.com/fabioasdias/nightlights/">Project page</a>
+        </footer>
       </div>
     );
   }
