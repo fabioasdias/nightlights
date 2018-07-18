@@ -7,7 +7,8 @@ class App extends Component {
     return (
       <div className="App">
         <Map
-          URL={'bright.geojson'}
+          URL={'bright2p.geojson'}
+          // URL2={'bright.geojson'}
         />
       </div>
     );

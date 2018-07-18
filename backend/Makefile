@@ -3,8 +3,8 @@ all: outData.tsv
 clean: 
 	-rm *.geojson
 	-rm *.tsv
-outData.tsv: list.tsv data/data.tsv joinData.py
-	python3 joinData.py list.tsv data/data.tsv outData.tsv
+outData.tsv: list.tsv ../data/data.tsv joinData.py
+	python3 joinData.py list.tsv ../data/data.tsv outData.tsv
 	sed 's/,/ /g' outData.tsv | sed 's/\t/,/g' > outData.csv
 list.tsv: mergeLists.py LA.tsv LB.tsv LC.tsv LD.tsv LE.tsv LF.tsv
 	python3 mergeLists.py LA.tsv LB.tsv LC.tsv LD.tsv LE.tsv LF.tsv list.tsv

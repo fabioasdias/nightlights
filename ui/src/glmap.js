@@ -13,7 +13,6 @@ let Map = class Map extends React.Component {
     
 
   componentDidUpdate() {
-    this.setFill();
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -31,6 +30,7 @@ let Map = class Map extends React.Component {
       container: this.mapContainer,
       style: 'mapbox://styles/diasf/cjjqdvh110bfy2rpczjs0hplj',
       center: [-80.138,26.109],
+      maxZoom: 9,
       zoom:4
     });
     // diasf.3trjgf18
@@ -59,6 +59,32 @@ let Map = class Map extends React.Component {
     this.map.on('moveend',()=>{this.moving=false;});
 
     this.map.on('load', () => {
+      if (this.props.URL2!==undefined){
+        fetch(this.props.URL2)
+        .then((response) => {
+          if (response.status >= 400) {throw new Error("Bad response from server");}
+          return response.json();
+        })
+        .then((ret)=>{
+          console.log(ret)
+          this.map.addSource('bright', {
+            type: 'geojson',
+            data: ret,
+          });
+
+          this.map.addLayer({
+            id: 'brightlayer',
+            type: 'line',
+            source: 'bright', 
+            paint: {'line-color':'blue',
+                    'line-width':1,
+                    'line-dasharray': [2,2],
+                    'line-opacity':0.75,
+                    },
+          }, 'country-label-lg'); 
+        });
+      }  
+          
       if (this.props.URL!==undefined){
         fetch(this.props.URL)
         .then((response) => {
@@ -67,33 +93,25 @@ let Map = class Map extends React.Component {
         })
         .then((ret)=>{
           console.log(ret)
-          this.map.addSource('gj', {
+          this.map.addSource('mega', {
             type: 'geojson',
             data: ret,
           });
 
           this.map.addLayer({
-            id: 'gjlayer',
+            id: 'megaregions',
             type: 'line',
-            source: 'gj', 
+            source: 'mega', 
             paint: {'line-color':'red',
+                    'line-width':1,
+                    'line-opacity':0.8,
                     },
-            // filter: ["!=", "tID", -1]
           }, 'country-label-lg'); 
-          this.setFill();            
         });
       }
       this.setState({'map':this.map});
     });
   }
-
-  setFill() {
-    if (this.props.paintProp!==undefined){
-      this.map.setPaintProperty('gjlayer', 'fill-color', ['get', this.props.paintProp]);    
-    }
-    // this.map.setFilter('faded',['!', ["has", ["to-string", ['get', "tID"]], ['literal', tids]]]);
-    // this.map.setFilter('gjlayer',["has", ["to-string", ['get', "tID"]], ['literal', tids]]);
-}
 
   render() {
     return (
