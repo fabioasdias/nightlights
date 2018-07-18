@@ -4,6 +4,11 @@ Original satellite data from <a target="_blank" rel="noopener noreferrer" href="
 
 We use the annual composite of the VIIRS Day/Night Band Nighttime Lights to detect conurbation between metropolitan regions. 
 
+## Interactive visualization:
+[Link to the interface](https://fabioasdias.github.io/nightlights/)
+
+In this visualization, we represent a clipped version of the log of the satellite data. The original data is too spiky to see anything directly. The borders of the mega regions encompassing more than one metro region are represented in red. 
+
 ## Summary of the algorithm:
 
 1. Binarization of the original data using a threshold of 1 nanoWatts/cm2/sr. 
@@ -13,4 +18,5 @@ We use the annual composite of the VIIRS Day/Night Band Nighttime Lights to dete
 1. <a target="_blank" rel="noopener noreferrer"   href="http://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.find_contours"> Find the contour lines</a> for level 0.5.
 
 For more details, check the [source file](../master/backend/getAreas.py).
+ 
  
