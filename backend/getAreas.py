@@ -13,6 +13,7 @@ import json
 from glob import glob
 
 DEBUG = True
+DEBUG_RESCALE = False
 if DEBUG:
     import matplotlib.pylab as plt
     from skimage.transform import rescale
@@ -59,31 +60,40 @@ def main(rasterfn,outGJ):
     # array = np.where(array>1,np.log(array),0)
 
     if DEBUG:
-        centre=[8000,25500]  # east
+        centre=[8200,25500]  # east
         # centre=[7000,13500] #west          
-        delta= [2000,4000]
+        delta= [500,500]
         minx=np.max((0,centre[0]-delta[0]))
         maxx=np.min((array.shape[0],centre[0]+delta[1]))
         miny=np.max((0,centre[1]-delta[0]))
         maxy=np.min((array.shape[1],centre[1]+delta[1]))
-        minx=4000
-        maxx=12100
-        miny=13200
-        maxy=27000
+        # minx=4000
+        # maxx=12100
+        # miny=13200
+        # maxy=27000
         mask=(slice(minx,maxx),slice(miny,maxy),)
-        # plt.figure(1)
-        # plt.imshow(array[mask])
-        # plt.title('Original data NOAA')
-        # plt.colorbar()
-        plt.figure(2)
+        
         # plt.imshow(np.where(array[mask]>1,np.log(array[mask]),0))
-        aux=np.where(array>1,np.log(array),0).T
-        aux=aux/np.max(aux)
-        small=rescale(aux,0.2)
-        del(aux)
-        plt.imshow(small,extent=[0,array.shape[0],0,array.shape[1]],origin='lower')
-        plt.title('log data NOAA')
-        plt.colorbar()
+        if (DEBUG_RESCALE):
+            plt.figure(2)            
+            aux=np.where(array>1,np.log(array),0).T
+            aux=aux/np.max(aux)
+            small=rescale(aux,0.2)
+            del(aux)
+            plt.imshow(small,extent=[0,array.shape[0],0,array.shape[1]],origin='lower')
+            plt.title('log data NOAA')
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+
+        else:
+            plt.figure(1)
+            plt.imshow(array[mask])
+            plt.title('Original data NOAA')
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+
         # plt.show()
 
 
@@ -92,35 +102,57 @@ def main(rasterfn,outGJ):
     # array=(array-amin)/(amax-amin)
     T=1#threshold_li(array)
     array = np.where(array<=T,0.0,1.0)
+    if DEBUG:
+        if (not DEBUG_RESCALE):
+            plt.figure()
+            plt.imshow(array[mask])
+            plt.title('threshold {0:.2f}'.format(T))
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+
+
     # array = minimum_filter(array,size=3)
     array = maximum_filter(array,size=5)#footprint=diamond(9))
     # array = minimum_filter(array,size=9)
-    # if DEBUG:
-        # plt.figure()
-        # plt.imshow(array[mask])
-        # plt.title('threshold {0:.2f} + dilation square 9'.format(T))
-        # plt.colorbar()
+    if DEBUG:
+        if (not DEBUG_RESCALE):
+            plt.figure()
+            plt.imshow(array[mask])
+            plt.title('threshold {0:.2f} + dilation square 5'.format(T))
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+
 
     array = gaussian(array,32)
     array = array/np.max(array)
     if DEBUG:
-        small=rescale(array,0.2)
-        plt.figure()
-        plt.imshow(small)
-        plt.title('Gaussian smoothing')
-        plt.colorbar()
-        plt.savefig(outGJ+'.gauss.png',dpi=900)
-        plt.close()
-
+        if DEBUG_RESCALE:
+            small=rescale(array,0.2)
+            plt.figure()
+            plt.imshow(small)
+            plt.title('Gaussian smoothing')
+            plt.colorbar()
+            plt.savefig(outGJ+'.gauss.png',dpi=900)
+            plt.close()
+        else:
+            plt.figure(4)
+            plt.imshow(array[mask])#,extent=[minx,maxx,miny,maxy],origin='lower')
+            plt.title('Gaussian smoothing')
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+            plt.show()
 
 
     spots=[]
     # holes={}
     for c in find_contours(array,0.5):
         coordinates=[]
-        if DEBUG:
-            plt.figure(2)
-            plt.plot(c[:,0],c[:,1],'-',linewidth=0.25)
+        # if DEBUG:
+        #     plt.figure(4)
+        #     plt.plot(c[:,0],c[:,1],'k-',linewidth=0.25)
 
         for i in range(c.shape[0]):
             lat,lon=pixelOffset2coord(geotransform,t,c[i,1],c[i,0])
@@ -138,6 +170,7 @@ def main(rasterfn,outGJ):
                 break
         if not intersect:
             spots.append(geom)
+
     
     # for i in holes:
     #     spots[i]=Polygon(spots[i],holes=holes[i])
@@ -159,10 +192,10 @@ def main(rasterfn,outGJ):
 
 
     if DEBUG:
-        plt.savefig(outGJ+'.areas.png',dpi=900)
-        plt.close()
-
-        # plt.show()
+        # plt.savefig(outGJ+'.areas.png',dpi=900)
+        # plt.close()
+        plt.figure(4)
+        plt.show()
   
     
 
