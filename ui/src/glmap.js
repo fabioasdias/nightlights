@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import './glmap.css'
 
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiZGlhc2YiLCJhIjoiY2plNHpweTRrMDA3MzJ3bmVuMGE5MTM1aCJ9.euL_A73QyruCda9iXc3ESA';
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGlhc2YiLCJhIjoiY2pqc243cW9wNDN6NTNxcm1jYW1jajY2NyJ9.2C0deXZ03NJyH2f51ui4Jg';
 
 
 
