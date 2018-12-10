@@ -12,7 +12,8 @@ import inspect
 import json
 from glob import glob
 
-DEBUG = True
+# DEBUG = True
+DEBUG = False
 DEBUG_RESCALE = False
 if DEBUG:
     import matplotlib.pylab as plt
@@ -96,12 +97,11 @@ def main(rasterfn,outGJ):
 
         # plt.show()
 
-
     # amin=np.min(array)
     # amax=np.max(array)
     # array=(array-amin)/(amax-amin)
-    T=1#threshold_li(array)
-    array = np.where(array<=T,0.0,1.0)
+    T=1
+    array = np.where(array<=T,array/T,1.0)
     if DEBUG:
         if (not DEBUG_RESCALE):
             plt.figure()
@@ -113,7 +113,7 @@ def main(rasterfn,outGJ):
 
 
     # array = minimum_filter(array,size=3)
-    array = maximum_filter(array,size=5)#footprint=diamond(9))
+    # array = maximum_filter(array,size=5)#footprint=diamond(9))
     # array = minimum_filter(array,size=9)
     if DEBUG:
         if (not DEBUG_RESCALE):
@@ -125,7 +125,7 @@ def main(rasterfn,outGJ):
             plt.yticks([])
 
 
-    array = gaussian(array,32)
+    array = gaussian(array,24)
     array = array/np.max(array)
     if DEBUG:
         if DEBUG_RESCALE:
@@ -148,7 +148,7 @@ def main(rasterfn,outGJ):
 
     spots=[]
     # holes={}
-    for c in find_contours(array,0.5):
+    for c in find_contours(array,0.25):
         coordinates=[]
         # if DEBUG:
         #     plt.figure(4)

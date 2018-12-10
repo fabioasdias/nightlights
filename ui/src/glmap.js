@@ -59,57 +59,43 @@ let Map = class Map extends React.Component {
     this.map.on('movestart',()=>{this.moving=true;});
     this.map.on('moveend',()=>{this.moving=false;});
 
-    this.map.on('load', () => {
-      if (this.props.URL2!==undefined){
-        fetch(this.props.URL2)
-        .then((response) => {
-          if (response.status >= 400) {throw new Error("Bad response from server");}
-          return response.json();
-        })
-        .then((ret)=>{
-          console.log(ret)
-          this.map.addSource('bright', {
-            type: 'geojson',
-            data: ret,
-          });
-
-          this.map.addLayer({
-            id: 'brightlayer',
-            type: 'line',
-            source: 'bright', 
-            paint: {'line-color':'blue',
-                    'line-width':1,
-                    'line-dasharray': [2,2],
-                    'line-opacity':0.75,
-                    },
-          }, 'country-label-lg'); 
-        });
-      }  
-          
+    this.map.on('load', () => {          
       if (this.props.URL!==undefined){
-        fetch(this.props.URL)
-        .then((response) => {
-          if (response.status >= 400) {throw new Error("Bad response from server");}
-          return response.json();
-        })
-        .then((ret)=>{
-          console.log(ret)
-          this.map.addSource('mega', {
-            type: 'geojson',
-            data: ret,
+        let toGet=[];
+        if (!Array.isArray(this.props.URL)){
+          toGet=[this.props.URL,];
+        }
+        else{
+          toGet=this.props.URL.slice();
+        }
+        for (let i=0;i<toGet.length;i++){
+          let url=toGet[i];
+          fetch(url)
+          .then((response) => {
+            if (response.status >= 400) {throw new Error("Bad response from server");}
+            return response.json();
+          })
+          .then((ret)=>{
+            console.log(ret);
+            this.map.addSource('mega'+i, {
+              type: 'geojson',
+              data: ret,
+            });
+  
+            this.map.addLayer({
+              id: 'megaregions'+i,
+              type: 'line',
+              source: 'mega'+i, 
+              paint: {'line-color':'red',
+                      'line-width':2,
+                      'line-opacity':this.props.opacity[i]
+                      // 'line-opacity':0.8,
+                      },
+            }, 'country-label-lg'); 
           });
-
-          this.map.addLayer({
-            id: 'megaregions',
-            type: 'line',
-            source: 'mega', 
-            paint: {'line-color':'red',
-                    'line-width':1,
-                    'line-opacity':0.8,
-                    },
-          }, 'country-label-lg'); 
-        });
-      }
+        }
+  
+        }
       this.setState({'map':this.map});
     });
   }

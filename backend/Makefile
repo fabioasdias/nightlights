@@ -1,8 +1,12 @@
-all: outData.tsv 
+all: outData.tsv full.geojson filt_full.geojson
 	echo 'ok'
 clean: 
 	-rm *.geojson
 	-rm *.tsv
+filt_full.geojson: filt_A.geojson filt_B.geojson filt_C.geojson filt_D.geojson filt_E.geojson filt_F.geojson
+	python3 combineGeoJsons.py "filt_?.geojson" filt_full.geojson
+full.geojson: A.geojson B.geojson C.geojson D.geojson E.geojson F.geojson
+	python3 combineGeoJsons.py "?.geojson" full.geojson
 outData.tsv: list.tsv ../data/data.tsv joinData.py
 	python3 joinData.py list.tsv ../data/data.tsv outData.tsv
 	sed 's/,/ /g' outData.tsv | sed 's/\t/,/g' > outData.csv

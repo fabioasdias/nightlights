@@ -7,7 +7,10 @@ class App extends Component {
     return (
       <div className="App">
         <Map
-          URL={'bright2p.geojson'}
+          // URL={'bright2p.geojson'}
+          // URL={['0.25.geojson','0.5.geojson']}
+          URL={'filt_full.geojson'}
+          opacity={[0.9,]}
           // URL2={'bright.geojson'}
         />
         <footer className="footer">
