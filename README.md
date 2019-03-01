@@ -4,6 +4,9 @@ Original satellite data from <a target="_blank" rel="noopener noreferrer" href="
 
 We use the annual composite of the VIIRS Day/Night Band Nighttime Lights to detect conurbation between metropolitan regions. 
 
+## Article using this data/method at citylab:
+https://www.citylab.com/life/2019/02/global-megaregions-economic-powerhouse-megalopolis/583729/
+
 ## Interactive visualization:
 [Link to the interface](https://fabioasdias.github.io/nightlights/)
 
