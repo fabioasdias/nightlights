@@ -7,6 +7,8 @@ We use the annual composite of the VIIRS Day/Night Band Nighttime Lights to dete
 ## Article using this data/method at citylab:
 https://www.citylab.com/life/2019/02/global-megaregions-economic-powerhouse-megalopolis/583729/
 
+An analysis using this data has been published in [TESG](https://onlinelibrary.wiley.com/doi/pdf/10.1111/tesg.12449)
+
 ## Interactive visualization:
 [Link to the interface](https://fabioasdias.github.io/nightlights/)
 
